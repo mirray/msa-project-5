@@ -64,9 +64,16 @@ def reload_json_to_file(**context):
     
     return path
             
+default_args = {
+    'owner': 'airflow',
+    'start_date': datetime(2026,1,1),
+    'retries': 3,
+    'retry_delay': timedelta(minutes=5)
+}
 with DAG(
     dag_id = 'test_etl',
-    description = 'For tests'
+    description = 'For tests',
+    default_args = default_args
 ) as dag:
     day = date.today().strftime('%d')
     month = date.today().strftime('%m')
