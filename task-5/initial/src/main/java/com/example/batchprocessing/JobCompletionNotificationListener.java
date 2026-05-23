@@ -30,5 +30,13 @@ public class JobCompletionNotificationListener implements JobExecutionListener {
 					.query("SELECT productId, productSku, productName, productAmount, productData FROM products", new DataClassRowMapper<>(Product.class))
 					.forEach(person -> log.info("Transformed <{}> in the database.", person));
 		}
+		try {
+            // Принудительно выталкиваем все метрики (включая те, что собрал наш StepExecutionListener)
+            // "spring-batch-job" должен совпадать с именем в настройках
+            pushGateway.pushAdd(collectorRegistry, "spring-batch-job");
+            System.out.println("Метрики успешно отправлены в Pushgateway!");
+        } catch (IOException e) {
+            System.err.println("Ошибка отправки метрик в Pushgateway: " + e.getMessage());
+        }
 	}
 }
