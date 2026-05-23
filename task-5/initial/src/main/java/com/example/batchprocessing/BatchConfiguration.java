@@ -17,16 +17,26 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
+import org.springframework.core.task.TaskExecutor;
+import org.springframework.batch.core.configuration.support.DefaultBatchConfiguration;
+
 
 @Configuration
-public class BatchConfiguration {
+public class BatchConfiguration  extends DefaultBatchConfiguration {
     private final BatchMetricsListener myStepExecutionListener;
 
     // Injecting the custom listener
     public BatchConfiguration(BatchMetricsListener myStepExecutionListener) {
         this.myStepExecutionListener = myStepExecutionListener;
     }
-    
+    // Overriding this bean makes the JobLauncher run jobs in a background thread
+    @Override
+    protected TaskExecutor getTaskExecutor() {
+        SimpleAsyncTaskExecutor asyncTaskExecutor = new SimpleAsyncTaskExecutor();
+        asyncTaskExecutor.setConcurrencyLimit(10); // Adjust based on hardware
+        return asyncTaskExecutor;
+    }
 	@Bean
 	public FlatFileItemReader<Product> reader() {
 		return new FlatFileItemReaderBuilder<Product>()
